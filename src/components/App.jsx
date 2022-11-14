@@ -33,22 +33,17 @@ export default function App() {
     }
 
     async function fetchImages() {
-      // const { page, pictureName } = this.state;
-
-      // if (prevState.pictureName !== pictureName || prevState.page !== page) {
       try {
         setStatus('pending');
         const images = await API.FetchPhoto(pictureName, page);
         if (images.length === 0) {
           return Promise.reject(
             new Error(`Sorry, we didn't find images with name "${pictureName}"`)
-          ).catch(error => setError(error), setStatus('rejected'));
-          // error => this.setState({error,
+          ).catch(error => {
+            setError(error);
+            setStatus('rejected');
+          });
         } else {
-          // this.setState(prevState => ({
-          //   images: [...prevState.images, ...images],
-          //   status: 'resolved',
-          // }));
           setImages(prevState => [...prevState, ...images]);
           setStatus('resolved');
         }
