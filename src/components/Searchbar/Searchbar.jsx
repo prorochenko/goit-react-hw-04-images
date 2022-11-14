@@ -36,7 +36,7 @@ export default class Searchbar extends PureComponent {
           placeholder={'Enter Image Name'}
         />
         <button className={css.SearchForm__button} type="submit">
-          Search
+          <span>Search</span>
         </button>
       </form>
     );
