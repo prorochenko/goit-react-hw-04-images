@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 
 import Searchbar from './Searchbar/Searchbar';
@@ -10,86 +10,99 @@ import LoadingComponent from './Loader/Loader';
 import PictureFoundFail from './ImageGallery/ImageError';
 import css from '../Styles/main.module.scss';
 
-export default class App extends PureComponent {
-  state = {
-    images: [],
-    showModal: false,
-    pictureName: '',
-    error: null,
-    status: 'idle',
-    page: 1,
-  };
+export default function App() {
+  // state = {
+  //   images: [],
+  //   showModal: false,
+  //   pictureName: '',
+  //   error: null,
+  //   status: 'idle',
+  //   page: 1,
+  // };
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { page, pictureName } = this.state;
+  const [images, setImages] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [pictureName, setPictureName] = useState('');
+  const [error, setError] = useState(null);
+  const [status, setStatus] = useState('idle');
+  const [page, setPage] = useState(1);
 
-    if (prevState.pictureName !== pictureName || prevState.page !== page) {
+  useEffect(() => {
+    if (pictureName === '') {
+      return;
+    }
+
+    async function fetchImages() {
+      // const { page, pictureName } = this.state;
+
+      // if (prevState.pictureName !== pictureName || prevState.page !== page) {
       try {
-        this.setState({ status: 'pending' });
+        setStatus('pending');
         const images = await API.FetchPhoto(pictureName, page);
         if (images.length === 0) {
           return Promise.reject(
             new Error(`Sorry, we didn't find images with name "${pictureName}"`)
-          ).catch(error => this.setState({ error, status: 'rejected' }));
+          ).catch(error => setError(error), setStatus('rejected'));
+          // error => this.setState({error,
         } else {
-          this.setState(prevState => ({
-            images: [...prevState.images, ...images],
-            status: 'resolved',
-          }));
+          // this.setState(prevState => ({
+          //   images: [...prevState.images, ...images],
+          //   status: 'resolved',
+          // }));
+          setImages(prevState => [...prevState, ...images]);
+          setStatus('resolved');
         }
       } finally {
-        this.setState({ status: 'idle' });
+        setStatus('idle');
       }
     }
-  }
+    fetchImages();
+  }, [pictureName, page]);
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
+  const toggleModal = () => {
+    setShowModal(prevState => !prevState);
   };
 
-  loadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-      status: 'pending',
-    }));
+  const loadMore = () => {
+    // page: prevState.page + 1,
+    setPage(prevState => prevState + 1);
+    // status: 'pending',
+    setStatus('pending');
   };
 
-  handleFormSubmit = pictureName => {
-    this.setState({ pictureName, images: [], page: 1 });
+  const handleFormSubmit = pictureName => {
+    // this.setState({ pictureName, images: [], page: 1 });
+    setPictureName(pictureName);
+    setImages([]);
+    setPage(1);
   };
 
-  render() {
-    const { showModal, error, status, images } = this.state;
+  // const { showModal, error, status, images } = this.state;
 
-    return (
-      <div>
-        <ToastContainer autoClose={3000} />
+  return (
+    <div>
+      <ToastContainer autoClose={3000} />
 
-        <Searchbar onSubmit={this.handleFormSubmit} />
+      <Searchbar onSubmit={handleFormSubmit} />
 
-        {status === 'idle' && images.length === 0 ? (
-          <div className={css.text}>
-            Hello! &#x270C; Please, enter an image name &#x1F446;
-          </div>
-        ) : (
-          ''
-        )}
-        {status === 'rejected' ? (
-          <div>
-            <PictureFoundFail message={error.message} />
-          </div>
-        ) : (
-          ''
-        )}
-        <ImageGallery images={images} />
-        {status === 'pending' && <LoadingComponent />}
-        {images.length > 0 && <Button onClick={this.loadMore} />}
-        {showModal && (
-          <Modal onClose={this.toggleModal} onClick={this.toggleModal} />
-        )}
-      </div>
-    );
-  }
+      {status === 'idle' && images.length === 0 ? (
+        <div className={css.text}>
+          Hello! &#x270C; Please, enter an image name &#x1F446;
+        </div>
+      ) : (
+        ''
+      )}
+      {status === 'rejected' ? (
+        <div>
+          <PictureFoundFail message={error.message} />
+        </div>
+      ) : (
+        ''
+      )}
+      <ImageGallery images={images} />
+      {status === 'pending' && <LoadingComponent />}
+      {images.length > 0 && <Button onClick={loadMore} />}
+      {showModal && <Modal onClose={toggleModal} onClick={toggleModal} />}
+    </div>
+  );
 }

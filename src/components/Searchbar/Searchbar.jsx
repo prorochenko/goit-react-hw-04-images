@@ -1,46 +1,45 @@
-import React, { PureComponent } from 'react';
+import { useState } from 'react';
 import css from './Searchbar.module.scss';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PropTypes from 'prop-types';
 
-export default class Searchbar extends PureComponent {
-  state = {
-    pictureName: '',
+export default function Searchbar({ onSubmit }) {
+  // state = {
+  //   pictureName: '',
+  // };
+  const [pictureName, setPictureName] = useState('');
+
+  const handleNameChange = e => {
+    setPictureName(e.currentTarget.value);
   };
 
-  handleNameChange = e => {
-    this.setState({ pictureName: e.currentTarget.value });
-  };
-
-  handleSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault();
-    if (this.state.pictureName.trim() === '') {
+    if (pictureName.trim() === '') {
       toast.error('Please, enter picture name');
       return;
     }
 
-    this.props.onSubmit(this.state.pictureName);
-    this.setState({ pictureName: '' });
+    onSubmit(pictureName);
+    setPictureName('');
   };
 
-  render() {
-    return (
-      <form className={css.Searchbar} onSubmit={this.handleSubmit}>
-        <input
-          className={css.input__box}
-          type="text"
-          name="pictureName"
-          value={this.state.pictureName}
-          onChange={this.handleNameChange}
-          placeholder={'Enter Image Name'}
-        />
-        <button className={css.SearchForm__button} type="submit">
-          <span>Search</span>
-        </button>
-      </form>
-    );
-  }
+  return (
+    <form className={css.Searchbar} onSubmit={handleSubmit}>
+      <input
+        className={css.input__box}
+        type="text"
+        name="pictureName"
+        value={pictureName}
+        onChange={handleNameChange}
+        placeholder={'Enter Image Name'}
+      />
+      <button className={css.SearchForm__button} type="submit">
+        <span>Search</span>
+      </button>
+    </form>
+  );
 }
 
 Searchbar.propTypes = {
